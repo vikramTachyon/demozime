@@ -255,12 +255,17 @@ app.get('/', (req, res) => {
 });
 
 // DASHBOARD — GET
+// X-Frame-Options: DENY blocks any iframe embedding of this URL
+// This proves the site blocks iframes — just like zime.ai does
 app.get('/dashboard', (req, res) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
   const { recordId, objectName, recordName, userName } = req.query;
   res.send(getDashboardHTML(recordId, objectName, recordName, userName));
 });
 
 // CANVAS — POST (Salesforce sends signed_request here)
+// NO X-Frame-Options here — Canvas uses POST not iframe, so it bypasses the block
 app.post('/canvas', (req, res) => {
   const signedRequest = req.body.signed_request;
 
