@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: zime-canvas-demo
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: CANVAS_CONSUMER_SECRET
+        sync: false   # You fill this in Render dashboard after creating SF Connected App
