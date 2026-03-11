@@ -6,6 +6,15 @@ const PORT = process.env.PORT || 3000;
 
 const CONSUMER_SECRET = process.env.CANVAS_CONSUMER_SECRET || 'DEMO_SECRET_REPLACE_ME';
 
+// CORS — allow Salesforce origins to call our Canvas endpoint
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
