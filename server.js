@@ -262,10 +262,14 @@ setTimeout(()=>{const t=document.getElementById('toast');t.style.transition='opa
 app.get('/', (req, res) => {
   res.send(`<html><head><style>body{font-family:sans-serif;background:#032D60;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px;}h1{font-size:28px;}p{color:rgba(255,255,255,.6);font-size:14px;}a{color:#00C896;}code{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px;}</style></head><body><h1>⚡ Zime Canvas Server Running</h1><p>Canvas endpoint: <code>POST /canvas</code></p><p>Demo: <a href="/dashboard">/dashboard</a></p><p>Status: <span style="color:#4ADE80">● Live</span></p></body></html>`);
 });
+// EMBED — GET (no X-Frame-Options, safe for LWC iframe)
+app.get('/embed', (req, res) => {
+  const { recordId, objectName, recordName, userName } = req.query;
+  res.send(getDashboardHTML(recordId, objectName, recordName, userName));
+});
 
 // DASHBOARD — GET
 // X-Frame-Options: DENY blocks any iframe embedding of this URL
-// This proves the site blocks iframes — just like zime.ai does
 app.get('/dashboard', (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
