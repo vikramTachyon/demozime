@@ -264,25 +264,34 @@ app.get('/dashboard', (req, res) => {
   res.send(getDashboardHTML(recordId, objectName, recordName, userName));
 });
 
-// CANVAS — POST (Salesforce sends signed_request here)
-// NO X-Frame-Options here — Canvas uses POST not iframe, so it bypasses the block
+// CANVAS — POST
+// Called by Salesforce Canvas (signed_request) OR directly by LWC (plain params)
 app.post('/canvas', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   const signedRequest = req.body.signed_request;
 
-  if (!signedRequest || CONSUMER_SECRET === 'DEMO_SECRET_REPLACE_ME') {
-    return res.send(getDashboardHTML('DEMO001', 'Account', 'Acme Corp', 'Demo User'));
+  // Direct LWC call — plain params, no signed request
+  if (!signedRequest) {
+    return res.send(getDashboardHTML(
+      req.body.recordId   || 'DEMO001',
+      req.body.objectName || 'Account',
+      req.body.recordName || 'Demo Account',
+      req.body.userName   || 'Salesforce User'
+    ));
   }
 
+  // Salesforce Canvas signed request
   try {
     const parts    = signedRequest.split('.');
     const sig      = Buffer.from(parts[0], 'base64');
     const payload  = parts[1];
     const expected = crypto.createHmac('sha256', CONSUMER_SECRET).update(payload).digest();
-
     if (!crypto.timingSafeEqual(sig, expected)) {
       return res.status(403).send('Invalid Canvas signature');
     }
-
     const ctx = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
     res.send(getDashboardHTML(
       ctx.parameters?.recordId,
@@ -294,6 +303,14 @@ app.post('/canvas', (req, res) => {
     console.error('Canvas error:', err);
     res.status(500).send('Error: ' + err.message);
   }
+});
+
+// CORS preflight
+app.options('/canvas', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
