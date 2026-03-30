@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 const CONSUMER_SECRET = process.env.CANVAS_CONSUMER_SECRET || 'DEMO_SECRET_REPLACE_ME';
 
-// CORS — allow Salesforce origins to call our Canvas endpoint
+// CORS
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -19,7 +19,56 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // ─────────────────────────────────────────────────────
-// DASHBOARD HTML — fully embedded, no external files
+// BLOCKED PAGE HTML
+// ─────────────────────────────────────────────────────
+function getBlockedHTML() {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #060F1E;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .icon { font-size: 48px; }
+    h1 { font-size: 22px; font-weight: 700; }
+    p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      max-width: 340px;
+      line-height: 1.6;
+    }
+    .badge {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: #FCA5A5;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="icon">🔒</div>
+  <div class="badge">Access Restricted</div>
+  <h1>Canvas Integration Required</h1>
+  <p>This dashboard is only accessible through Salesforce Canvas. Direct access is not permitted.</p>
+</body>
+</html>`;
+}
+
+// ─────────────────────────────────────────────────────
+// DASHBOARD HTML
 // ─────────────────────────────────────────────────────
 function getDashboardHTML(recordId, objectName, recordName, userName) {
   recordId   = recordId   || 'DEMO001';
@@ -46,7 +95,6 @@ html,body{height:100%;overflow:hidden;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:13px;display:flex;flex-direction:column;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-/* TOPBAR */
 .topbar{height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0;}
 .logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;letter-spacing:-.03em;}
 .logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#E8470A,#FF8C42);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:white;}
@@ -59,7 +107,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .user{display:flex;align-items:center;gap:6px;}
 .avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#3B82F6);display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;}
 .uname{font-size:11px;color:var(--muted);}
-/* METRICS */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border);flex-shrink:0;}
 .metric{padding:14px 18px;border-right:1px solid var(--border);animation:fadeUp .4s ease both;}
 .metric:last-child{border-right:none;}
@@ -68,14 +115,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .mvalue{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1;margin-bottom:3px;}
 .mchange{font-size:11px;font-weight:500;}
 .up{color:var(--green);}.dn{color:var(--red);}.nt{color:var(--muted);}
-/* GRID */
 .grid{display:grid;grid-template-columns:1fr 290px;flex:1;overflow:hidden;}
 .lcol{display:flex;flex-direction:column;border-right:1px solid var(--border);overflow:hidden;}
 .rcol{display:flex;flex-direction:column;overflow-y:auto;}
 .panel{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;animation:fadeUp .5s ease both;}
 .ptitle{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
 .ptitle-r{font-size:10px;color:rgba(255,255,255,.2);font-weight:400;text-transform:none;letter-spacing:0;}
-/* SCORE */
 .score-sec{display:flex;align-items:center;gap:18px;}
 .ring{width:78px;height:78px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;}
 .ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--green) 0% var(--pct,78%),rgba(255,255,255,.06) var(--pct,78%) 100%);}
@@ -92,7 +137,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width 1s cubic-bezier(.4,0,.2,1);}
 .bar-fill.y{background:var(--yellow);}
 .bar-val{font-size:10px;color:var(--muted);width:24px;text-align:right;}
-/* TIMELINE */
 .tl{display:flex;flex-direction:column;overflow-y:auto;flex:1;}
 .tl-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);animation:fadeUp .4s ease both;}
 .tl-item:last-child{border-bottom:none;}
@@ -100,7 +144,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .tl-dot.g{background:var(--green);}.tl-dot.b{background:var(--blue);}.tl-dot.y{background:var(--yellow);}.tl-dot.r{background:var(--red);}
 .tl-t{font-size:12px;font-weight:500;margin-bottom:1px;}
 .tl-m{font-size:10px;color:var(--muted);}
-/* INSIGHTS */
 .ins{display:flex;flex-direction:column;gap:7px;}
 .ins-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;display:flex;gap:9px;cursor:pointer;transition:border-color .2s;animation:fadeUp .5s ease both;}
 .ins-card:hover{border-color:var(--border2);}
@@ -111,7 +154,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .tr{background:rgba(248,113,113,.12);color:#FCA5A5;}
 .ta{background:rgba(0,200,150,.1);color:var(--green);}
 .ti{background:rgba(59,130,246,.1);color:#93C5FD;}
-/* TASKS */
 .tasks{display:flex;flex-direction:column;gap:5px;}
 .task{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:border-color .2s;animation:fadeUp .5s ease both;}
 .task:hover{border-color:var(--border2);}
@@ -121,7 +163,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-
 .ttext.done{text-decoration:line-through;color:var(--muted);}
 .tdue{font-size:10px;color:var(--muted);white-space:nowrap;}
 .tdue.ov{color:var(--red);}
-/* TOAST */
 .toast{position:fixed;bottom:18px;right:18px;background:rgba(0,200,150,.12);border:1px solid rgba(0,200,150,.3);border-radius:8px;padding:9px 14px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--green);font-weight:500;z-index:999;animation:fadeUp .4s ease;box-shadow:0 8px 32px rgba(0,0,0,.4);}
 ::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px;}
 </style>
@@ -260,51 +301,45 @@ setTimeout(()=>{const t=document.getElementById('toast');t.style.transition='opa
 
 // ROOT
 app.get('/', (req, res) => {
-  res.send(`<html><head><style>body{font-family:sans-serif;background:#032D60;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px;}h1{font-size:28px;}p{color:rgba(255,255,255,.6);font-size:14px;}a{color:#00C896;}code{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px;}</style></head><body><h1>⚡ Zime Canvas Server Running</h1><p>Canvas endpoint: <code>POST /canvas</code></p><p>Demo: <a href="/dashboard">/dashboard</a></p><p>Status: <span style="color:#4ADE80">● Live</span></p></body></html>`);
-});
-// EMBED — GET (no X-Frame-Options, safe for LWC iframe)
-app.get('/embed', (req, res) => {
-  const { recordId, objectName, recordName, userName } = req.query;
-  res.send(getDashboardHTML(recordId, objectName, recordName, userName));
+  res.send(`<html><head><style>body{font-family:sans-serif;background:#032D60;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px;}h1{font-size:28px;}p{color:rgba(255,255,255,.6);font-size:14px;}a{color:#00C896;}code{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px;}</style></head><body><h1>⚡ Zime Canvas Server Running</h1><p>Canvas endpoint: <code>POST /canvas</code></p><p>Status: <span style="color:#4ADE80">● Live</span></p></body></html>`);
 });
 
-// DASHBOARD — GET
-// X-Frame-Options: DENY blocks any iframe embedding of this URL
+// ❌ /dashboard — blocked, shows access restricted
 app.get('/dashboard', (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
-  const { recordId, objectName, recordName, userName } = req.query;
-  res.send(getDashboardHTML(recordId, objectName, recordName, userName));
+  res.status(403).send(getBlockedHTML());
 });
 
-// CANVAS — POST
-// Called by Salesforce Canvas (signed_request) OR directly by LWC (plain params)
+// ❌ /embed GET — blocked, must come via Canvas POST
+app.get('/embed', (req, res) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
+  res.status(403).send(getBlockedHTML());
+});
+
+// ✅ /canvas POST — only valid Salesforce Canvas signed request loads dashboard
 app.post('/canvas', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Security-Policy', "frame-ancestors https://*.lightning.force.com https://*.salesforce.com https://*.visualforce.com");
 
   const signedRequest = req.body.signed_request;
 
-  // Direct LWC call — plain params, no signed request
+  // ❌ No signed request = block
   if (!signedRequest) {
-    return res.send(getDashboardHTML(
-      req.body.recordId   || 'DEMO001',
-      req.body.objectName || 'Account',
-      req.body.recordName || 'Demo Account',
-      req.body.userName   || 'Salesforce User'
-    ));
+    return res.status(403).send(getBlockedHTML());
   }
 
-  // Salesforce Canvas signed request
+  // ✅ Verify Canvas signed request
   try {
     const parts    = signedRequest.split('.');
     const sig      = Buffer.from(parts[0], 'base64');
     const payload  = parts[1];
     const expected = crypto.createHmac('sha256', CONSUMER_SECRET).update(payload).digest();
+
     if (!crypto.timingSafeEqual(sig, expected)) {
-      return res.status(403).send('Invalid Canvas signature');
+      return res.status(403).send(getBlockedHTML());
     }
+
     const ctx = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
     res.send(getDashboardHTML(
       ctx.parameters?.recordId,
