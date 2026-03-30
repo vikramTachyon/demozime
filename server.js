@@ -363,4 +363,51 @@ app.options('/canvas', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`✅ Zime Canvas server on port ${PORT}`);
+  app.post('/canvas', (req, res) => {
+  res.setHeader('Content-Security-Policy', "frame-ancestors https://*.lightning.force.com https://*.salesforce.com https://*.visualforce.com");
+
+  const signedRequest = req.body.signed_request;
+
+  if (!signedRequest) {
+    console.log('❌ No signed_request in body');
+    console.log('Body received:', req.body);
+    return res.status(403).send(getBlockedHTML());
+  }
+
+  try {
+    const parts   = signedRequest.split('.');
+    const sig     = Buffer.from(parts[0], 'base64');
+    const payload = parts[1];
+
+    console.log('=== ZIME DEBUG ===');
+    console.log('Secret length:', CONSUMER_SECRET.length);
+    console.log('Secret first 4:', CONSUMER_SECRET.substring(0, 4));
+    console.log('Received signature:', parts[0]);
+    console.log('Payload:', payload);
+
+    const expected = crypto.createHmac('sha256', CONSUMER_SECRET)
+                           .update(payload)
+                           .digest();
+    const expectedB64 = expected.toString('base64');
+
+    console.log('Expected signature:', expectedB64);
+    console.log('Match:', parts[0] === expectedB64);
+
+    if (!crypto.timingSafeEqual(sig, expected)) {
+      console.log('❌ Signature mismatch');
+      return res.status(403).send(getBlockedHTML());
+    }
+
+    const ctx = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
+    res.send(getDashboardHTML(
+      ctx.parameters?.recordId,
+      ctx.parameters?.objectName,
+      ctx.parameters?.recordName,
+      ctx.context?.user?.fullName
+    ));
+
+  } catch (err) {
+    console.error('Canvas error:', err);
+    res.status(500).send('Error: ' + err.message);
+  }
 });
