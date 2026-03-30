@@ -279,10 +279,34 @@ document.getElementById('b2').style.width=data.b2;document.getElementById('b2v')
 document.getElementById('b3').style.width=data.b3;document.getElementById('b3v').textContent=data.b3v;
 document.getElementById('rlabel').textContent=oN;
 document.getElementById('tlctx').textContent=rN;
-document.getElementById('tl').innerHTML=data.tl.map((t,i)=>`<div class="tl-item" style="animation-delay:${.05*i}s"><div class="tl-dot ${t.d}"></div><div><div class="tl-t">${t.t}</div><div class="tl-m">${t.m}</div></div></div>`).join('');
-document.getElementById('ins').innerHTML=data.ins.map((x,i)=>`<div class="ins-card" style="animation-delay:${.1+.05*i}s"><div class="ins-icon">${x.i}</div><div><div class="ins-title">${x.t}</div><div class="ins-desc">${x.d}</div><span class="ins-tag ${x.c}">${x.l}</span></div></div>`).join('');
-document.getElementById('tasks').innerHTML=data.tasks.map((t,i)=>`<div class="task" style="animation-delay:${.1+.05*i}s"><div class="tcheck ${t.done?'done':''}">${t.done?'✓':''}</div><div class="ttext ${t.done?'done':''}">${t.t}</div><div class="tdue ${t.ov?'ov':''}">${t.due}</div></div>`).join('');
-setTimeout(()=>{const t=document.getElementById('toast');t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},4000);
+document.getElementById('tl').innerHTML = data.tl.map((t,i) =>
+  '<div class="tl-item" style="animation-delay:' + (0.05*i) + 's">' +
+    '<div class="tl-dot ' + t.d + '"></div>' +
+    '<div>' +
+      '<div class="tl-t">' + t.t + '</div>' +
+      '<div class="tl-m">' + t.m + '</div>' +
+    '</div>' +
+  '</div>'
+).join('');
+
+document.getElementById('ins').innerHTML = data.ins.map((x,i) =>
+  '<div class="ins-card" style="animation-delay:' + (0.1 + 0.05*i) + 's">' +
+    '<div class="ins-icon">' + x.i + '</div>' +
+    '<div>' +
+      '<div class="ins-title">' + x.t + '</div>' +
+      '<div class="ins-desc">' + x.d + '</div>' +
+      '<span class="ins-tag ' + x.c + '">' + x.l + '</span>' +
+    '</div>' +
+  '</div>'
+).join('');
+
+document.getElementById('tasks').innerHTML = data.tasks.map((t,i) =>
+  '<div class="task" style="animation-delay:' + (0.1 + 0.05*i) + 's">' +
+    '<div class="tcheck ' + (t.done ? 'done' : '') + '">' + (t.done ? '✓' : '') + '</div>' +
+    '<div class="ttext ' + (t.done ? 'done' : '') + '">' + t.t + '</div>' +
+    '<div class="tdue ' + (t.ov ? 'ov' : '') + '">' + t.due + '</div>' +
+  '</div>'
+).join('');
 </script>
 </body>
 </html>`;
