@@ -273,8 +273,17 @@ function getDashboardHTML(recordId, objectName, recordName, userName) {
   return html;
 }
  
-// ROOT
+// SF_FRAME_ANCESTORS — reused on every route SF might frame
+var SF_ANCESTORS = 'frame-ancestors ' +
+  'https://*.lightning.force.com ' +
+  'https://*.salesforce.com ' +
+  'https://*.visualforce.com ' +
+  'https://*.vf.force.com ' +
+  'https://*.force.com';
+ 
+// ROOT — must allow SF framing (SF probes this before /canvas)
 app.get('/', (req, res) => {
+  res.setHeader('Content-Security-Policy', SF_ANCESTORS);
   res.send('<html><head><style>body{font-family:sans-serif;background:#032D60;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px;}h1{font-size:28px;}p{color:rgba(255,255,255,.6);font-size:14px;}code{background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px;}</style></head><body><h1>&#9889; Zime Canvas Server Running</h1><p>Canvas endpoint: <code>POST /canvas</code></p><p>Status: <span style="color:#4ADE80">&#9679; Live</span></p></body></html>');
 });
  
@@ -292,29 +301,35 @@ app.get('/embed', (req, res) => {
   res.status(403).send(getBlockedHTML());
 });
  
-// ❌ /canvas GET — blocked (shows helpful message)
+// /canvas GET — SF sends user here for approval redirect
+// Must allow framing AND handle _sfdc_canvas_auth param
 app.get('/canvas', (req, res) => {
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'");
-  res.status(405).send(
-    '<html><body style="font-family:sans-serif;background:#032D60;color:white;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:12px;">' +
-    '<h2>Method Not Allowed</h2>' +
-    '<p style="color:rgba(255,255,255,.6)">/canvas only accepts POST requests from Salesforce Canvas.</p>' +
-    '<p style="color:rgba(255,255,255,.6)">Direct browser access is not supported.</p>' +
+  res.setHeader('Content-Security-Policy', SF_ANCESTORS);
+ 
+  // If SF is redirecting for user approval
+  var canvasAuth = req.query._sfdc_canvas_auth;
+  var loginUrl   = req.query.loginUrl;
+ 
+  if (canvasAuth === 'user_approval_required' && loginUrl) {
+    // Redirect user to SF login/approval page
+    return res.redirect(loginUrl + '/ltng/loginflow?startURL=' +
+      encodeURIComponent('https://zime-canvas-demo.onrender.com/canvas'));
+  }
+ 
+  // Normal GET — show info page
+  res.status(200).send(
+    '<html><head><style>body{font-family:sans-serif;background:#032D60;color:white;' +
+    'display:flex;align-items:center;justify-content:center;height:100vh;margin:0;' +
+    'flex-direction:column;gap:12px;}</style></head>' +
+    '<body><h2 style="color:#4ADE80">&#9889; Canvas Endpoint Ready</h2>' +
+    '<p style="color:rgba(255,255,255,.6)">/canvas accepts POST from Salesforce Canvas only.</p>' +
     '</body></html>'
   );
 });
  
 // ✅ /canvas POST — verify signed request then serve dashboard
 app.post('/canvas', (req, res) => {
-  res.setHeader('Content-Security-Policy',
-    'frame-ancestors ' +
-    'https://*.lightning.force.com ' +
-    'https://*.salesforce.com ' +
-    'https://*.visualforce.com ' +
-    'https://*.vf.force.com ' +
-    'https://*.force.com'
-  );
+  res.setHeader('Content-Security-Policy', SF_ANCESTORS);
  
   const signedRequest = req.body.signed_request;
  
